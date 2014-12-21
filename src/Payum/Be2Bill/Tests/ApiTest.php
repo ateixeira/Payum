@@ -11,11 +11,11 @@ class ApiTest extends \Phpunit_Framework_TestCase
      */
     public function couldBeConstructedWithClientAndOptions()
     {
-        new Api($this->createClientMock(), array(
+        new Api(array(
             'identifier' => 'anId',
             'password' => 'aPass',
             'sandbox' => true,
-        ));
+        ), $this->createClientMock());
     }
 
     /**
@@ -23,11 +23,11 @@ class ApiTest extends \Phpunit_Framework_TestCase
      */
     public function shouldReturnPostArrayWithOperationTypeAddedOnPrepareOnsitePayment()
     {
-        $api = new Api($this->createClientMock(), array(
+        $api = new Api(array(
             'identifier' => 'anId',
             'password' => 'aPass',
             'sandbox' => true,
-        ));
+        ), $this->createClientMock());
 
         $post = $api->prepareOnsitePayment(array(
             'AMOUNT' => 100,
@@ -43,11 +43,11 @@ class ApiTest extends \Phpunit_Framework_TestCase
      */
     public function shouldReturnPostArrayWithGlobalsAddedOnPrepareOnsitePayment()
     {
-        $api = new Api($this->createClientMock(), array(
+        $api = new Api(array(
             'identifier' => 'anId',
             'password' => 'aPass',
             'sandbox' => true,
-        ));
+        ), $this->createClientMock());
 
         $post = $api->prepareOnsitePayment(array(
             'AMOUNT' => 100,
@@ -64,11 +64,11 @@ class ApiTest extends \Phpunit_Framework_TestCase
      */
     public function shouldFilterNotSupportedOnPrepareOnsitePayment()
     {
-        $api = new Api($this->createClientMock(), array(
+        $api = new Api(array(
             'identifier' => 'anId',
             'password' => 'aPass',
             'sandbox' => true,
-        ));
+        ), $this->createClientMock());
 
         $post = $api->prepareOnsitePayment(array(
             'AMOUNT' => 100,
@@ -86,15 +86,15 @@ class ApiTest extends \Phpunit_Framework_TestCase
      */
     public function shouldKeepSupportedOnPrepareOnsitePayment()
     {
-        $api = new Api($this->createClientMock(), array(
+        $api = new Api(array(
             'identifier' => 'anId',
             'password' => 'aPass',
             'sandbox' => true,
-        ));
+        ), $this->createClientMock());
 
         $post = $api->prepareOnsitePayment(array(
             'AMOUNT' => 100,
-            'DESCRIPTION' => 'a desc'
+            'DESCRIPTION' => 'a desc',
         ));
 
         $this->assertInternalType('array', $post);
@@ -111,11 +111,11 @@ class ApiTest extends \Phpunit_Framework_TestCase
      */
     public function shouldReturnFalseIfHashNotSetToParams()
     {
-        $api = new Api($this->createClientMock(), array(
+        $api = new Api(array(
             'identifier' => 'anId',
             'password' => 'aPass',
             'sandbox' => true,
-        ));
+        ), $this->createClientMock());
 
         $this->assertFalse($api->verifyHash(array()));
     }
@@ -131,11 +131,11 @@ class ApiTest extends \Phpunit_Framework_TestCase
         );
         $invalidHash = 'invalidHash';
 
-        $api = new Api($this->createClientMock(), array(
+        $api = new Api(array(
             'identifier' => 'anId',
             'password' => 'aPass',
             'sandbox' => true,
-        ));
+        ), $this->createClientMock());
 
         //guard
         $this->assertNotEquals($invalidHash, $api->calculateHash($params));
@@ -155,11 +155,11 @@ class ApiTest extends \Phpunit_Framework_TestCase
             'bar' => 'barVal',
         );
 
-        $api = new Api($this->createClientMock(), array(
+        $api = new Api(array(
             'identifier' => 'anId',
             'password' => 'aPass',
             'sandbox' => true,
-        ));
+        ), $this->createClientMock());
 
         $params['HASH'] = $api->calculateHash($params);
 
@@ -173,4 +173,4 @@ class ApiTest extends \Phpunit_Framework_TestCase
     {
         return $this->getMock('Buzz\Client\ClientInterface');
     }
-} 
+}

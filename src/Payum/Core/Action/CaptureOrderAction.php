@@ -29,15 +29,13 @@ class CaptureOrderAction extends PaymentAwareAction
 
         $details = ArrayObject::ensureArrayObject($order->getDetails());
 
+        $request->setModel($details);
         try {
-            $request->setModel($details);
             $this->payment->execute($request);
 
             $order->setDetails($details);
-            $request->setModel($order);
         } catch (\Exception $e) {
             $order->setDetails($details);
-            $request->setModel($order);
 
             throw $e;
         }

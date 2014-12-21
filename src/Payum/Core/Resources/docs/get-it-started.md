@@ -13,7 +13,7 @@ The preferred way to install the library is using [composer](http://getcomposer.
 Run composer require to add dependencies to _composer.json_:
 
 ```bash
-php composer.phar require "payum/offline:*@stable"
+php composer.phar require payum/offline
 ```
 
 _**Note**: Where payum/offline is a php payum extension, you can for example change it to payum/paypal-express-checkout-nvp or payum/stripe. Look at [supported payments](supported-payments.md) to find out what you can use._
@@ -95,7 +95,7 @@ $paymentName = 'offline';
 
 $storage = $payum->getStorage($orderClass);
 
-$order = $storage->createModel();
+$order = $storage->create();
 $order->setNumber(uniqid());
 $order->setCurrencyCode('EUR');
 $order->setTotalAmount(123); // 1.23 EUR
@@ -103,7 +103,7 @@ $order->setDescription('A description');
 $order->setClientId('anId');
 $order->setClientEmail('foo@example.com');
 
-$storage->updateModel($order);
+$storage->update($order);
 
 $captureToken = $tokenFactory->createCaptureToken($paymentName, $order, 'done.php');
 
@@ -160,25 +160,27 @@ use Payum\Core\Request\GetHumanStatus;
 include 'config.php';
 
 $token = $requestVerifier->verify($_REQUEST);
-// $requestVerifier->invalidate($token);
 
 $payment = $payum->getPayment($token->getPaymentName());
 
+// you can invalidate the token. The url could not be requested any more.
+// $requestVerifier->invalidate($token);
+
+// Once you have token you can get the model from the storage directly. 
+//$identity = $token->getDetails();
+//$order = $payum->getStorage($identity->getClass())->find($identity);
+
+// or Payum can fetch the model for you while executing a request (Preferred).
 $payment->execute($status = new GetHumanStatus($token));
+$order = $status->getFirstModel());
 
 header('Content-Type: application/json');
 echo json_encode(array(
     'status' => $status->getValue(),
     'order' => array(
-        'client' => array(
-            'id' => $status->getModel()->getClientId(),
-            'email' => $status->getModel()->getClientEmail(),
-        ),
-        'number' => $status->getModel()->getNumber(),
-        'description' => $status->getModel()->getCurrencyCode(),
-        'total_amount' => $status->getModel()->getTotalAmount(),
-        'currency_code' => $status->getModel()->getCurrencyCode(),
-        'details' => $status->getModel()->getDetails(),
+        'total_amount' => $order->getTotalAmount(),
+        'currency_code' => $order->getCurrencyCode(),
+        'details' => $order->getDetails(),
     ),
 )));
 ```

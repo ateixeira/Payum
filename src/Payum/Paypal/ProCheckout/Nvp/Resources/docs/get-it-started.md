@@ -10,39 +10,34 @@ The preferred way to install the library is using [composer](http://getcomposer.
 Run composer require to add dependencies to _composer.json_:
 
 ```bash
-php composer.phar require "payum/paypal-pro-checkout-nvp:*@stable"
+php composer.phar require "payum/paypal-pro-checkout-nvp"
 ```
 
 ## config.php
 
-We have to only add a the payment factory. All the rest remain the same:
+We have to only add the payment factory. All the rest remain the same:
 
 
 ```php
 <?php
 //config.php
 
-use Buzz\Client\Curl;
-use Payum\Paypal\ProCheckout\Nvp\PaymentFactory as PaypalProPaymentFactory;
-use Payum\Paypal\ProCheckout\Nvp\Api as PaypalProApi;
-
 // ...
 
-$payments['paypal_pro'] = PaypalProPaymentFactory::create(new PaypalProApi(
-    new Curl,
-    array(
-        'username' => 'REPLACE IT',
-        'password' => 'REPLACE IT',
-        'partner' => 'REPLACE IT',
-        'vendor' => 'REPLACE IT',
-        'sandbox' => true
-    )
+$paypalProCheckoutFactory = new \Payum\Paypal\ProCheckout\Nvp\PaymentFactory();
+
+$payments['paypal_pro_checkout'] = $paypalProCheckoutFactory->create(array(
+    'username' => 'REPLACE IT',
+    'password' => 'REPLACE IT',
+    'partner' => 'REPLACE IT',
+    'vendor' => 'REPLACE IT',
+    'sandbox' => true
 ));
 ```
 
 ## prepare.php
 
-Here you have to modify a `paymentName` value. Set it to `paypal_pro`.
+Here you have to modify a `paymentName` value. Set it to `paypal_pro_checkout`.
 
 ## Next 
 

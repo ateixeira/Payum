@@ -6,7 +6,6 @@ use Payum\Core\Request\GetHttpRequest;
 
 class GetHttpRequestAction implements ActionInterface
 {
-
     /**
      * {@inheritDoc}
      *
@@ -22,6 +21,7 @@ class GetHttpRequestAction implements ActionInterface
         $request->clientIp = isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '';
         $request->uri = isset($_SERVER['REQUEST_URI']) ? $_SERVER['REQUEST_URI'] : '';
         $request->userAgent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+        $request->content = file_get_contents('php://input');
     }
 
     /**

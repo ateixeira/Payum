@@ -7,6 +7,26 @@
 * [paypal-pro] Remove `Request` and `Response` classes. Use ones from Buzz.
 * [paypal-pro] Remove `trxtype` option from api.
 * [paypal-pro] Rename `Api::doPayment` to `Api::doSale`. Change the first argument now it is array and the method returns array too.
+* [be2bill] `Api` constructor arguments order was changed. Second argument `options` is now first, and the client now is second and optional.
+* [paypal-ipn] `Api` constructor arguments order was changed. Second argument `options` is now first, and the client now is second and optional.
+* [paypal-pro] `Api` constructor arguments order was changed. Second argument `options` is now first, and the client now is second and optional.
+* [payment] Method `PaymentInterface::addApi` was removed from interface, still available in `Payment` class.
+* [payment] Method `PaymentInterface::addAction` was removed from interface, still available in `Payment` class.
+* [payment] Method `PaymentInterface::addExtension` was removed from interface, still available in `Payment` class.
+* [storage] Method `StorageInterface::createModel` was renamed to `create`.
+* [storage] Method `StorageInterface::supportModel` was renamed to `support`.
+* [storage] Method `StorageInterface::updateModel` was renamed to `update`.
+* [storage] Method `StorageInterface::deleteModel` was renamed to `delete`.
+* [storage] Method `StorageInterface::findModelById` was renamed to `find`.
+* [storage] Method `StorageInterface::getIdentificator` was renamed to `identify`.
+* [storage] Method `StorageInterface::findByIdentificator` was removed. Use `find` method instead.
+* [storage] Class `Identificator` was deprecated. Use `Identity` instead.
+* [factory] Payment factories were changed significantly. Now they implements `PaymentFactoryInterface` and therefor have to accept only array of options as first argument.
+* [be2bill] Action `CaptureOnsiteAction` was renamed to `CaptureOffsiteAction`.
+* [be2bill] Factory `OnsitePaymentFactory` was renamed to `OffsitePaymentFactory`.
+* [be2bill] Factory `PaymentFactory` was renamed to `DirectPaymentFactory`.
+* [stripe] Factory `PaymentFactory` was splitted into two: `JsPaymentFactory` and `CheckoutPaymentFactory`.
+
 
 ## 0.11 to 0.12
 

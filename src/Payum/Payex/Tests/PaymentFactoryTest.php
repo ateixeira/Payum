@@ -2,119 +2,90 @@
 namespace Payum\Payex\Tests;
 
 use Payum\Payex\PaymentFactory;
-use Payum\Payex\Api\OrderApi;
-use Payum\Payex\Api\RecurringApi;
-use Payum\Payex\Api\AgreementApi;
 
 class PaymentFactoryTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
      */
-    public function couldNotBeInstantiated()
+    public function shouldImplementPaymentFactoryInterface()
     {
         $rc = new \ReflectionClass('Payum\Payex\PaymentFactory');
 
-        $this->assertFalse($rc->isInstantiable());
+        $this->assertTrue($rc->implementsInterface('Payum\Core\PaymentFactoryInterface'));
     }
 
     /**
      * @test
      */
-    public function shouldAllowCreatePaymentWithStandardActionsAdded()
+    public function couldBeConstructedWithoutAnyArguments()
     {
-        $orderApiMock = $this->createOrderApiMock();
-
-        $payment = PaymentFactory::create($orderApiMock);
-
-        $this->assertInstanceOf('Payum\Core\Payment', $payment);
-
-        $this->assertAttributeCount(1, 'apis', $payment);
-
-        $actions = $this->readAttribute($payment, 'actions');
-        $this->assertInternalType('array', $actions);
-        $this->assertCount(11, $actions);
+        new PaymentFactory();
     }
 
     /**
      * @test
      */
-    public function shouldAllowCreatePaymentWithStandardActionsAddedPlusAgreementOnes()
+    public function shouldAllowCreatePayment()
     {
-        $orderApiMock = $this->createOrderApiMock();
-        $agreementApiMock = $this->createAgreementApiMock();
+        $factory = new PaymentFactory();
 
-        $payment = PaymentFactory::create($orderApiMock, $agreementApiMock);
+        $payment = $factory->create(array('accountNumber' => 'aNum', 'encryptionKey' => 'aKey'));
 
         $this->assertInstanceOf('Payum\Core\Payment', $payment);
 
-        $this->assertAttributeCount(2, 'apis', $payment);
+        $this->assertAttributeNotEmpty('apis', $payment);
+        $this->assertAttributeNotEmpty('actions', $payment);
 
-        $actions = $this->readAttribute($payment, 'actions');
-        $this->assertInternalType('array', $actions);
-        $this->assertCount(16, $actions);
+        $extensions = $this->readAttribute($payment, 'extensions');
+        $this->assertAttributeNotEmpty('extensions', $extensions);
     }
 
     /**
      * @test
      */
-    public function shouldAllowCreatePaymentWithStandardActionsAddedPlusRecurringOnes()
+    public function shouldAllowCreatePaymentWithCustomApi()
     {
-        $orderApiMock = $this->createOrderApiMock();
-        $recurringApiMock = $this->createRecurringApiMock();
-        
-        $payment = PaymentFactory::create($orderApiMock, null, $recurringApiMock);
+        $factory = new PaymentFactory();
+
+        $payment = $factory->create(array(
+            'payum.api.order' => new \stdClass(),
+            'payum.api.agreement' => new \stdClass(),
+            'payum.api.recurring' => new \stdClass()
+        ));
 
         $this->assertInstanceOf('Payum\Core\Payment', $payment);
 
-        $this->assertAttributeCount(2, 'apis', $payment);
+        $this->assertAttributeNotEmpty('apis', $payment);
+        $this->assertAttributeNotEmpty('actions', $payment);
 
-        $actions = $this->readAttribute($payment, 'actions');
-        $this->assertInternalType('array', $actions);
-        $this->assertCount(14, $actions);
+        $extensions = $this->readAttribute($payment, 'extensions');
+        $this->assertAttributeNotEmpty('extensions', $extensions);
     }
 
     /**
      * @test
      */
-    public function shouldAllowCreatePaymentWithStandardActionsAddedPlusAgreementAndRecurringOnes()
+    public function shouldAllowCreatePaymentConfig()
     {
-        $orderApiMock = $this->createOrderApiMock();
-        $agreementApiMock = $this->createAgreementApiMock();
-        $recurringApiMock = $this->createRecurringApiMock();
+        $factory = new PaymentFactory();
 
-        $payment = PaymentFactory::create($orderApiMock, $agreementApiMock, $recurringApiMock);
+        $config = $factory->createConfig();
 
-        $this->assertInstanceOf('Payum\Core\Payment', $payment);
-
-        $this->assertAttributeCount(3, 'apis', $payment);
-
-        $actions = $this->readAttribute($payment, 'actions');
-        $this->assertInternalType('array', $actions);
-        $this->assertCount(19, $actions);
+        $this->assertInternalType('array', $config);
+        $this->assertNotEmpty($config);
     }
 
     /**
-     * @return \PHPUnit_Framework_MockObject_MockObject|\Payum\Payex\Api\OrderApi
+     * @test
+     *
+     * @expectedException \Payum\Core\Exception\LogicException
+     * @expectedExceptionMessage The accountNumber, encryptionKey fields are required.
      */
-    protected function createOrderApiMock()
+    public function shouldThrowIfRequiredOptionsNotPassed()
     {
-        return $this->getMock('Payum\Payex\Api\OrderApi', array(), array(), '', false);
-    }
+        $factory = new PaymentFactory();
 
-    /**
-     * @return \PHPUnit_Framework_MockObject_MockObject|AgreementApi
-     */
-    protected function createAgreementApiMock()
-    {
-        return $this->getMock('Payum\Payex\Api\AgreementApi', array(), array(), '', false);
-    }
-
-    /**
-     * @return \PHPUnit_Framework_MockObject_MockObject|RecurringApi
-     */
-    protected function createRecurringApiMock()
-    {
-        return $this->getMock('Payum\Payex\Api\RecurringApi', array(), array(), '', false);
+        $factory->create();
     }
 }

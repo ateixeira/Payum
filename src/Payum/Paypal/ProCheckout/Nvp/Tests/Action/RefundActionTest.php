@@ -44,7 +44,7 @@ class RefundActionTest extends GenericActionTest
     {
         $action = new RefundAction();
 
-        $action->setApi(new \stdClass);
+        $action->setApi(new \stdClass());
     }
 
     /**
@@ -91,7 +91,7 @@ class RefundActionTest extends GenericActionTest
      * @test
      *
      * @expectedException \Payum\Core\Exception\LogicException
-     * @expectedExceptionMessage The PNREF fields is required.
+     * @expectedExceptionMessage The PNREF fields are required.
      */
     public function throwIfTransactionIdNotSet()
     {

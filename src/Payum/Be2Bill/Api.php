@@ -3,7 +3,7 @@ namespace Payum\Be2Bill;
 
 use Buzz\Client\ClientInterface;
 use Buzz\Message\Form\FormRequest;
-
+use Payum\Core\Bridge\Buzz\ClientFactory;
 use Payum\Core\Exception\InvalidArgumentException;
 use Payum\Core\Exception\Http\HttpException;
 use Payum\Core\Bridge\Buzz\JsonResponse;
@@ -117,14 +117,14 @@ class Api
     );
 
     /**
+     * @param array                        $options
      * @param \Buzz\Client\ClientInterface $client
-     * @param array $options
      *
      * @throws \Payum\Core\Exception\InvalidArgumentException if an option is invalid
      */
-    public function __construct(ClientInterface $client, array $options)
+    public function __construct(array $options, ClientInterface $client = null)
     {
-        $this->client = $client;
+        $this->client = $client = ClientFactory::createCurl();
         $this->options = array_replace($this->options, $options);
 
         if (true == empty($this->options['identifier'])) {
@@ -155,12 +155,12 @@ class Api
 
         return $this->doRequest($request);
     }
-    
+
     /**
      * Verify if the hash of the given parameter is correct
-     * 
+     *
      * @param array $params
-     * 
+     *
      * @return bool
      */
     public function verifyHash(array $params)
@@ -168,10 +168,10 @@ class Api
         if (empty($params['HASH'])) {
             return false;
         }
-        
+
         $hash = $params['HASH'];
         unset($params['HASH']);
-        
+
         return $hash === $this->calculateHash($params);
     }
 
@@ -208,7 +208,7 @@ class Api
     }
 
     /**
-     * @param array $params
+     * @param  array $params
      * @return array
      */
     public function prepareOnsitePayment(array $params)
@@ -245,7 +245,7 @@ class Api
     }
 
     /**
-     * @param array $params
+     * @param  array $params
      * @return array
      */
     protected function appendGlobalParams(array $params = array())
@@ -279,7 +279,7 @@ class Api
 
         $clearString = $this->options['password'];
         foreach ($params as $key => $value) {
-            $clearString .= $key . '=' . $value . $this->options['password'];
+            $clearString .= $key.'='.$value.$this->options['password'];
         }
 
         return hash('sha256', $clearString);

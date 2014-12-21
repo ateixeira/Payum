@@ -177,11 +177,11 @@ class Api
 
     /**
      * @param ClientInterface $client
-     * @param array $options
+     * @param array           $options
      *
      * @throw InvalidArgumentException
      */
-    public function __construct(ClientInterface $client, array $options)
+    public function __construct(array $options, ClientInterface $client = null)
     {
         $this->client = $client;
         $this->options = array_replace($this->options, $options);
@@ -191,7 +191,7 @@ class Api
             'password',
             'partner',
             'vendor',
-            'tender'
+            'tender',
         ));
     }
 
@@ -245,7 +245,7 @@ class Api
         $request->setMethod('POST');
         $request->fromUrl($this->getApiEndpoint());
 
-        $this->client->send($request, $response = new Response);
+        $this->client->send($request, $response = new Response());
 
         if (false == $response->isSuccessful()) {
             throw HttpException::factory($request, $response);

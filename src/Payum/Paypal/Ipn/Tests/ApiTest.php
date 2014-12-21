@@ -2,30 +2,29 @@
 namespace Payum\Paypal\Ipn\Tests;
 
 use Buzz\Client\ClientInterface;
-
 use Payum\Paypal\Ipn\Api;
 
-class ApiTest extends \PHPUnit_Framework_TestCase 
+class ApiTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @test
      */
     public function couldBeConstructedWithBuzzClientAndOptions()
     {
-        new Api($this->createClientMock(), array(
-            'sandbox' => true
-        ));
+        new Api(array(
+            'sandbox' => true,
+        ), $this->createClientMock());
     }
 
     /**
      * @test
-     * 
+     *
      * @expectedException \Payum\Core\Exception\InvalidArgumentException
      * @expectedExceptionMessage The boolean sandbox option must be set.
      */
     public function throwIfSandboxOptionNotSetInConstructor()
     {
-        new Api($this->createClientMock(), array());
+        new Api(array(), $this->createClientMock());
     }
 
     /**
@@ -33,9 +32,9 @@ class ApiTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldReturnSandboxIpnEndpointIfSandboxSetTrueInConstructor()
     {
-        $api = new Api($this->createClientMock(), array(
-            'sandbox' => true
-        ));
+        $api = new Api(array(
+            'sandbox' => true,
+        ), $this->createClientMock());
 
         $this->assertEquals('https://www.sandbox.paypal.com/cgi-bin/webscr', $api->getIpnEndpoint());
     }
@@ -45,16 +44,16 @@ class ApiTest extends \PHPUnit_Framework_TestCase
      */
     public function shouldReturnLiveIpnEndpointIfSandboxSetFalseInConstructor()
     {
-        $api = new Api($this->createClientMock(), array(
-            'sandbox' => false
-        ));
+        $api = new Api(array(
+            'sandbox' => false,
+        ), $this->createClientMock());
 
         $this->assertEquals('https://www.paypal.com/cgi-bin/webscr', $api->getIpnEndpoint());
     }
 
     /**
      * @test
-     * 
+     *
      * @expectedException \Payum\Core\Exception\Http\HttpException
      * @expectedExceptionMessage Client error response
      */
@@ -68,14 +67,14 @@ class ApiTest extends \PHPUnit_Framework_TestCase
                 $this->isInstanceOf('Buzz\Message\Form\FormRequest'),
                 $this->isInstanceOf('Buzz\Message\Response')
             )
-            ->will($this->returnCallback(function($request, $response) {
+            ->will($this->returnCallback(function ($request, $response) {
                 $response->setHeaders(array('HTTP/1.1 404 Not Found'));
             }))
         ;
 
-        $api = new Api($clientMock, array(
-            'sandbox' => false
-        ));
+        $api = new Api(array(
+            'sandbox' => false,
+        ), $clientMock);
 
         $api->notifyValidate(array());
     }
@@ -86,7 +85,7 @@ class ApiTest extends \PHPUnit_Framework_TestCase
     public function shouldProxyWholeNotificationToClientSend()
     {
         $actualRequest = null;
-            
+
         $clientMock = $this->createClientMock();
         $clientMock
             ->expects($this->once())
@@ -95,28 +94,28 @@ class ApiTest extends \PHPUnit_Framework_TestCase
                 $this->isInstanceOf('Buzz\Message\Form\FormRequest'),
                 $this->isInstanceOf('Buzz\Message\Response')
             )
-            ->will($this->returnCallback(function($request, $response) use (&$actualRequest) {
+            ->will($this->returnCallback(function ($request, $response) use (&$actualRequest) {
                 $response->setHeaders(array('HTTP/1.1 200 OK'));
                 $response->setContent('ACK=Success');
-                        
+
                 $actualRequest = $request;
             }))
         ;
-        
-        $api = new Api($clientMock, array(
-            'sandbox' => false
-        ));
+
+        $api = new Api(array(
+            'sandbox' => false,
+        ), $clientMock);
 
         $expectedNotification = array(
             'foo' => 'foo',
-            'bar' => 'baz'
+            'bar' => 'baz',
         );
 
         $api->notifyValidate($expectedNotification);
-        
+
         $this->assertInstanceOf('Buzz\Message\Form\FormRequest', $actualRequest);
         $this->assertEquals(
-            array('cmd' => Api::CMD_NOTIFY_VALIDATE) + $expectedNotification, 
+            array('cmd' => Api::CMD_NOTIFY_VALIDATE) + $expectedNotification,
             $actualRequest->getFields()
         );
         $this->assertEquals($api->getIpnEndpoint(), $actualRequest->getUrl());
@@ -136,15 +135,15 @@ class ApiTest extends \PHPUnit_Framework_TestCase
                 $this->isInstanceOf('Buzz\Message\Form\FormRequest'),
                 $this->isInstanceOf('Buzz\Message\Response')
             )
-            ->will($this->returnCallback(function($request, $response) {
+            ->will($this->returnCallback(function ($request, $response) {
                 $response->setHeaders(array('HTTP/1.1 200 OK'));
                 $response->setContent(Api::NOTIFY_VERIFIED);
             }))
         ;
 
-        $api = new Api($clientMock, array(
-            'sandbox' => false
-        ));
+        $api = new Api(array(
+            'sandbox' => false,
+        ), $clientMock);
 
         $this->assertEquals(Api::NOTIFY_VERIFIED, $api->notifyValidate(array()));
     }
@@ -162,15 +161,15 @@ class ApiTest extends \PHPUnit_Framework_TestCase
                 $this->isInstanceOf('Buzz\Message\Form\FormRequest'),
                 $this->isInstanceOf('Buzz\Message\Response')
             )
-            ->will($this->returnCallback(function($request, $response) {
+            ->will($this->returnCallback(function ($request, $response) {
                         $response->setHeaders(array('HTTP/1.1 200 OK'));
                         $response->setContent(Api::NOTIFY_INVALID);
                     }))
         ;
 
-        $api = new Api($clientMock, array(
-            'sandbox' => false
-        ));
+        $api = new Api(array(
+            'sandbox' => false,
+        ), $clientMock);
 
         $this->assertEquals(Api::NOTIFY_INVALID, $api->notifyValidate(array()));
     }
@@ -188,15 +187,15 @@ class ApiTest extends \PHPUnit_Framework_TestCase
                 $this->isInstanceOf('Buzz\Message\Form\FormRequest'),
                 $this->isInstanceOf('Buzz\Message\Response')
             )
-            ->will($this->returnCallback(function($request, $response) {
+            ->will($this->returnCallback(function ($request, $response) {
                         $response->setHeaders(array('HTTP/1.1 200 OK'));
                         $response->setContent('foobarbaz');
                     }))
         ;
 
-        $api = new Api($clientMock, array(
-            'sandbox' => false
-        ));
+        $api = new Api(array(
+            'sandbox' => false,
+        ), $clientMock);
 
         $this->assertEquals(Api::NOTIFY_INVALID, $api->notifyValidate(array()));
     }
@@ -218,7 +217,7 @@ class ApiTest extends \PHPUnit_Framework_TestCase
         $clientMock
             ->expects($this->any())
             ->method('send')
-            ->will($this->returnCallback(function($request, $response) {
+            ->will($this->returnCallback(function ($request, $response) {
                 $response->setHeaders(array('HTTP/1.1 200 OK'));
             }))
         ;

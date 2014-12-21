@@ -1,6 +1,7 @@
 <?php
 namespace Payum\Core\Security;
 
+use League\Url\Url;
 use Payum\Core\Registry\StorageRegistryInterface;
 use Payum\Core\Storage\StorageInterface;
 
@@ -12,13 +13,13 @@ class GenericTokenFactory extends AbstractGenericTokenFactory
     protected $baseUrl;
 
     /**
-     * @param StorageInterface $tokenStorage
+     * @param StorageInterface         $tokenStorage
      * @param StorageRegistryInterface $storageRegistry
-     * @param string $baseUrl
-     * @param string $capturePath
-     * @param string $notifyPath
-     * @param string $authorizePath
-     * @param string $refundPath
+     * @param string                   $baseUrl
+     * @param string                   $capturePath
+     * @param string                   $notifyPath
+     * @param string                   $authorizePath
+     * @param string                   $refundPath
      */
     public function __construct(StorageInterface $tokenStorage, StorageRegistryInterface $storageRegistry, $baseUrl, $capturePath, $notifyPath, $authorizePath, $refundPath)
     {
@@ -32,12 +33,10 @@ class GenericTokenFactory extends AbstractGenericTokenFactory
      */
     protected function generateUrl($path, array $parameters = array())
     {
-        $url = rtrim($this->baseUrl, '/').'/'.ltrim($path, '/');
+        $url = Url::createFromUrl($this->baseUrl);
+        $url->getPath()->set($path);
+        $url->getQuery()->set($parameters);
 
-        if (false == empty($parameters)) {
-            $url .= '?'.http_build_query($parameters);
-        }
-
-        return $url;
+        return (string) $url;
     }
 }

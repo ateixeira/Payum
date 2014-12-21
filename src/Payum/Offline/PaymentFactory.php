@@ -1,37 +1,51 @@
 <?php
 namespace Payum\Offline;
 
-use Payum\Core\Action\ExecuteSameRequestWithModelDetailsAction;
-use Payum\Core\Action\GetHttpRequestAction;
-use Payum\Core\Extension\EndlessCycleDetectorExtension;
+use Payum\Core\Bridge\Spl\ArrayObject;
+use Payum\Core\PaymentFactory as CorePaymentFactory;
+use Payum\Core\PaymentFactoryInterface;
 use Payum\Offline\Action\CaptureAction;
 use Payum\Offline\Action\FillOrderDetailsAction;
 use Payum\Offline\Action\StatusAction;
-use Payum\Core\Payment;
 
-abstract class PaymentFactory
+class PaymentFactory implements PaymentFactoryInterface
 {
     /**
-     * @return \Payum\Core\Payment
+     * @var PaymentFactoryInterface
      */
-    public static function create()
+    protected $corePaymentFactory;
+
+    /**
+     * @param PaymentFactoryInterface $corePaymentFactory
+     */
+    public function __construct(PaymentFactoryInterface $corePaymentFactory = null)
     {
-        $payment = new Payment;
-
-        $payment->addExtension(new EndlessCycleDetectorExtension);
-
-        $payment->addAction(new FillOrderDetailsAction);
-        $payment->addAction(new CaptureAction);
-        $payment->addAction(new StatusAction);
-        $payment->addAction(new ExecuteSameRequestWithModelDetailsAction);
-        $payment->addAction(new GetHttpRequestAction);
-
-        return $payment;
+        $this->corePaymentFactory = $corePaymentFactory ?: new CorePaymentFactory();
     }
 
     /**
+     * {@inheritDoc}
      */
-    private  function __construct()
+    public function create(array $config = array())
     {
+        return $this->corePaymentFactory->create($this->createConfig($config));
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function createConfig(array $config = array())
+    {
+        $config = ArrayObject::ensureArrayObject($config);
+
+        $config->defaults($this->corePaymentFactory->createConfig());
+
+        $config->defaults(array(
+            'payum.action.capture' => new CaptureAction(),
+            'payum.action.status' => new StatusAction(),
+            'payum.action.fill_order_details' => new FillOrderDetailsAction(),
+        ));
+
+        return (array) $config;
     }
 }

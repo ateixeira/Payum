@@ -1,7 +1,9 @@
 <?php
 namespace Payum\Core\Security;
 
+use League\Url\Url;
 use Payum\Core\Registry\StorageRegistryInterface;
+use Payum\Core\Storage\IdentityInterface;
 use Payum\Core\Storage\StorageInterface;
 
 abstract class AbstractGenericTokenFactory implements GenericTokenFactoryInterface
@@ -37,12 +39,12 @@ abstract class AbstractGenericTokenFactory implements GenericTokenFactoryInterfa
     protected $authorizePath;
 
     /**
-     * @param StorageInterface $tokenStorage
+     * @param StorageInterface         $tokenStorage
      * @param StorageRegistryInterface $storageRegistry
-     * @param string $capturePath
-     * @param string $notifyPath
-     * @param string $authorizePath
-     * @param string $refundPath
+     * @param string                   $capturePath
+     * @param string                   $notifyPath
+     * @param string                   $authorizePath
+     * @param string                   $refundPath
      */
     public function __construct(StorageInterface $tokenStorage, StorageRegistryInterface $storageRegistry, $capturePath, $notifyPath, $authorizePath, $refundPath)
     {
@@ -61,42 +63,42 @@ abstract class AbstractGenericTokenFactory implements GenericTokenFactoryInterfa
     public function createToken($paymentName, $model, $targetPath, array $targetParameters = array(), $afterPath = null, array $afterParameters = array())
     {
         /** @var TokenInterface $token */
-        $token = $this->tokenStorage->createModel();
+        $token = $this->tokenStorage->create();
 
         $token->setPaymentName($paymentName);
 
-        if (null !== $model) {
-            $token->setDetails(
-                $this->storageRegistry->getStorage($model)->getIdentificator($model)
-            );
+        if ($model instanceof IdentityInterface) {
+            $token->setDetails($model);
+        } elseif (null !== $model) {
+            $token->setDetails($this->storageRegistry->getStorage($model)->identify($model));
         }
 
-        $targetParameters = array_replace($targetParameters, array('payum_token' => $token->getHash()));
         if (0 === strpos($targetPath, 'http')) {
-            if (false !== strpos($targetPath, '?')) {
-                $targetPath .= '&'.http_build_query($targetParameters);
-            } else {
-                $targetPath .= '?'.http_build_query($targetParameters);
-            }
+            $targetUrl = Url::createFromUrl($targetPath);
+            $targetUrl->getQuery()->set(array_replace(
+                array('payum_token' => $token->getHash()),
+                $targetUrl->getQuery()->toArray(),
+                $targetParameters
+            ));
 
-            $token->setTargetUrl($targetPath);
+            $token->setTargetUrl((string) $targetUrl);
         } else {
-            $token->setTargetUrl($this->generateUrl($targetPath, $targetParameters));
+            $token->setTargetUrl($this->generateUrl($targetPath, array_replace(
+                array('payum_token' => $token->getHash()),
+                $targetParameters
+            )));
         }
 
         if ($afterPath && 0 === strpos($afterPath, 'http')) {
-            if (false !== strpos($afterPath, '?')) {
-                $afterPath .= '&'.http_build_query($afterParameters);
-            } else {
-                $afterPath .= '?'.http_build_query($afterParameters);
-            }
+            $afterUrl = Url::createFromUrl($afterPath);
+            $afterUrl->getQuery()->modify($afterParameters);
 
-            $token->setAfterUrl($afterPath);
+            $token->setAfterUrl((string) $afterUrl);
         } elseif ($afterPath) {
             $token->setAfterUrl($this->generateUrl($afterPath, $afterParameters));
         }
 
-        $this->tokenStorage->updateModel($token);
+        $this->tokenStorage->update($token);
 
         return $token;
     }
@@ -111,7 +113,7 @@ abstract class AbstractGenericTokenFactory implements GenericTokenFactoryInterfa
         $captureToken = $this->createToken($paymentName, $model, $this->capturePath);
         $captureToken->setAfterUrl($afterToken->getTargetUrl());
 
-        $this->tokenStorage->updateModel($captureToken);
+        $this->tokenStorage->update($captureToken);
 
         return $captureToken;
     }
@@ -119,9 +121,8 @@ abstract class AbstractGenericTokenFactory implements GenericTokenFactoryInterfa
     /**
      * {@inheritDoc}
      */
-    public function createRefundToken($paymentName, $model, $afterPath=null, array $afterParameters = array())
+    public function createRefundToken($paymentName, $model, $afterPath = null, array $afterParameters = array())
     {
-
         $refundToken = $this->createToken($paymentName, $model, $this->refundPath);
 
         if ($afterPath) {
@@ -129,7 +130,7 @@ abstract class AbstractGenericTokenFactory implements GenericTokenFactoryInterfa
             $refundToken->setAfterUrl($afterToken->getTargetUrl());
         }
 
-        $this->tokenStorage->updateModel($refundToken);
+        $this->tokenStorage->update($refundToken);
 
         return $refundToken;
     }
@@ -144,7 +145,7 @@ abstract class AbstractGenericTokenFactory implements GenericTokenFactoryInterfa
         $authorizeToken = $this->createToken($paymentName, $model, $this->authorizePath);
         $authorizeToken->setAfterUrl($afterToken->getTargetUrl());
 
-        $this->tokenStorage->updateModel($authorizeToken);
+        $this->tokenStorage->update($authorizeToken);
 
         return $authorizeToken;
     }
@@ -159,7 +160,7 @@ abstract class AbstractGenericTokenFactory implements GenericTokenFactoryInterfa
 
     /**
      * @param string $path
-     * @param array $parameters
+     * @param array  $parameters
      *
      * @return string
      */

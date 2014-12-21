@@ -10,26 +10,29 @@ The preferred way to install the library is using [composer](http://getcomposer.
 Run composer require to add dependencies to _composer.json_:
 
 ```bash
-php composer.phar require "payum/authorize-net-aim:*@stable"
+php composer.phar require payum/authorize-net-aim
 ```
 
 ## config.php
 
-We have to only add a the payment factory. All the rest remain the same:
+We have to only add the payment factory. All the rest remain the same:
 
 ```php
 <?php
 //config.php
 
-use Payum\AuthorizeNet\Aim\Bridge\AuthorizeNet\AuthorizeNetAIM;
-use Payum\AuthorizeNet\Aim\PaymentFactory as AuthorizeNetPaymentFactory;
-
 // ...
 
-$authorizeNetAim = new AuthorizeNetAIM($loginId = 'REPLACE IT', $transactionKey = 'REPLACE IT');
-$authorizeNetAim->setSandbox(true);
+$authorizeNetAimFactory = new \Payum\AuthorizeNet\Aim\PaymentFactory;
 
-$payments['authorize-net-aim'] = AuthorizeNetPaymentFactory::create($authorizeNetAim);
+$payments['authorize-net-aim'] = $authorizeNetAimFactory->create(array(
+    'loginId' => 'REPLACE IT',
+    'transactionKey' => 'REPLACE IT',
+    'sandbox' => true,
+));
+
+
+// ...
 ```
 
 ## prepare.php

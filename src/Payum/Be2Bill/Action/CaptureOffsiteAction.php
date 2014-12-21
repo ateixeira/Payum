@@ -11,7 +11,7 @@ use Payum\Core\Request\Capture;
 use Payum\Core\Request\GetHttpRequest;
 use Payum\Core\Reply\HttpPostRedirect;
 
-class CaptureOnsiteAction extends PaymentAwareAction implements ApiAwareInterface
+class CaptureOffsiteAction extends PaymentAwareAction implements ApiAwareInterface
 {
     /**
      * @var Api
@@ -41,7 +41,7 @@ class CaptureOnsiteAction extends PaymentAwareAction implements ApiAwareInterfac
 
         $model = ArrayObject::ensureArrayObject($request->getModel());
 
-        $httpRequest = new GetHttpRequest;
+        $httpRequest = new GetHttpRequest();
         $this->payment->execute($httpRequest);
 
         //we are back from be2bill site so we have to just update model.

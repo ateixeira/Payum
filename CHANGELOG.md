@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.12.8 (2014-12-13)
+
+* [action] Back port from master a `GenericOrderAction`. Fixes "Attempted to call method "getClientId" in done script but got array instead of order" 
+
+## 0.12.7 (2014-12-11)
+
+* [klarna-checkout] Mark failed if error_code set in details.
+
+## 0.12.6 (2014-11-20)
+
+* [action] Add `NotifyOrderAction` action.
+
+## 0.12.5 (2014-11-11)
+
+* [doc] add sagepay and redsys to list of supported payments.
+* [security] token factory should accept Identificator instance as model.
+* [paypal-ec] use capture\authorize details as details for notify token.
+
+## 0.12.4 (2014-11-10)
+
+* [request] add cancel request.
+* [stripe] description in template must have default val.
+
+## 0.12.3 (2014-11-08)
+
+* [paypal-ec] Allow purchase order with custom details
+
+## 0.12.2 (2014-11-07)
+
+* [security] Added cURL Options for the PayPal Sandbox SSL 3.0 Vulnerability (POODLE)
+* [omnipay-bridge] catch invalid credit card exception.
+
 ## 0.12.1 (2014-10-31)
 
 * [symfony-bridge][forms] Fix exception "there is only 'years' option available."

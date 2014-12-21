@@ -1,5 +1,33 @@
 # Capture script.
 
+## Simple use case
+
+To perform a capture you just have to do:
+
+```php
+<?php
+use Payum\Core\Request\Capture;
+
+$payment->execute(new Capture($order));
+
+// or
+
+$payment->execute(new Capture($details));
+```
+
+_**Note**: If you've got the "RequestNotSupported" it either means Payum or a gateway do not support the capture._
+
+## Advanced (Secure) use case
+
+To use that you have to configure token factory and create a capture script:
+
+```php
+<?php
+$token = $tokenFactory->createCaptureToken($paymentName, $details, 'afterCaptureUrl');
+
+header("Location: ".$token->getTargetUrl());
+```
+
 This is the script which does all the job related to capturing payments. 
 It may show a credit card form, an iframe or redirect a user to payment side. 
 The action provides some basic security features. 
